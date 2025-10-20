@@ -8,8 +8,8 @@ import (
 )
 
 type config struct {
-	gameBoard GameBoard
-	gamestate GameState
+	board GameBoard
+	state GameState
 }
 
 type cliCommand struct {
@@ -21,7 +21,14 @@ type cliCommand struct {
 func startRepl(cfg *config) {
 	reader := bufio.NewScanner(os.Stdin)
 	for {
-		cfg.gameBoard.ShowBoard()
+		cfg.board.ShowBoard()
+		if cfg.board.state == StateLose {
+			fmt.Println()
+			fmt.Println("Game Over")
+		} else if cfg.board.state == StateWin {
+			fmt.Println()
+			fmt.Println("You've won!")
+		}
 		fmt.Println()
 		fmt.Print("Minesweeper > ")
 		reader.Scan()
@@ -68,6 +75,11 @@ func listCommands() map[string]cliCommand {
 			name:        "flag",
 			description: "Flags a space a suspected mine",
 			callback:    commandFlag,
+		},
+		"new": {
+			name:        "new",
+			description: "Starts a new game",
+			callback:    commandNew,
 		},
 		"peek": {
 			name:        "peek",

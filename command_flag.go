@@ -5,6 +5,9 @@ import (
 )
 
 func commandFlag(cfg *config, args []string) error {
+	if cfg.board.state== StateLose || cfg.board.state == StateWin {
+		return nil
+	}
 	if len(args) < 1 {
 		return errors.New("No valid space given")
 	}
@@ -12,5 +15,5 @@ func commandFlag(cfg *config, args []string) error {
 	if err != nil {
 		return err
 	}
-	return cfg.gameBoard.Flag(row, column)
+	return cfg.board.Flag(row, column)
 }

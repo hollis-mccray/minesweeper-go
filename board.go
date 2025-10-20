@@ -55,7 +55,7 @@ type GameBoard struct {
 }
 
 // Has to be before the factory method NewBoard because NewBoard calls it
-func (b GameBoard)placeMine(){
+func (b *GameBoard)placeMine(){
 	for {
 		row := rand.Intn(b.rows)
 		col := rand.Intn(b.rows)
@@ -66,11 +66,6 @@ func (b GameBoard)placeMine(){
 	}
 
 }
-
-// Standard game sizes:
-// 8 x 8 (or 9 x 9), 10 mines
-// 16 x 16, 40 mines
-// 16 x 30, 99
 
 // Factory method that initializes a new board, including placing bombs
 func NewBoard(rows, columns, mines int) GameBoard {
@@ -147,7 +142,7 @@ var shiftList = []index{
 		{1, 1},
 	}
 
-func (b GameBoard)countAdjacentMines() {
+func (b *GameBoard)countAdjacentMines() {
 
 	count := func(row, col int) {
 		counter := 0
@@ -182,10 +177,39 @@ func (b GameBoard)countAdjacentMines() {
 	wg.Wait()
 }
 
-func (b GameBoard)Open(row, column int) error {
-	if b.state == StateLose {
-		return nil
+
+func (b *GameBoard)victoryCheck() {
+	var wg sync.WaitGroup
+
+	allMinesFlagged := true
+	allSafeOpened := true
+
+	for i:= 0; i < b.rows; i++ {
+		for j:= 0; j < b.columns; j++ {
+			wg.Add(1)
+
+			go func() {
+				defer wg.Done()
+				if b.cells[i][j].is_mine {
+					if !b.cells[i][j].is_flagged {
+						allMinesFlagged = false
+					} 
+				} else {
+					if !b.cells[i][j].is_open {
+						allSafeOpened = false
+					}
+				}
+			}()
+		}
 	}
+
+	wg.Wait()
+	if allMinesFlagged || allSafeOpened {
+		b.state = StateWin
+	}
+}
+
+func (b *GameBoard)Open(row, column int) error {
 
 	if row < 0 || row >= b.rows {
 		return errors.New("invalid space")
@@ -206,8 +230,8 @@ func (b GameBoard)Open(row, column int) error {
 			b.placeMine()
 			b.cells[row][column].is_mine = false
 		}
-		b.countAdjacentMines()
 		b.state = StateContinue
+		b.countAdjacentMines()
 	}
 
 	b.cells[row][column].is_open = true
@@ -228,11 +252,12 @@ func (b GameBoard)Open(row, column int) error {
 			}
 		}
 	}
+	b.victoryCheck()
 	return nil
 }
 
-func (b GameBoard)Flag(row, column int) error {
-	if b.state == StateLose {
+func (b *GameBoard)Flag(row, column int) error {
+	if b.state == StateLose || b.state == StateWin {
 		return nil
 	}
 
@@ -249,5 +274,6 @@ func (b GameBoard)Flag(row, column int) error {
 	}
 
 	b.cells[row][column].is_flagged = !b.cells[row][column].is_flagged
+	b.victoryCheck()
 	return nil
 }
