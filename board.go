@@ -49,13 +49,13 @@ func (c cell) peek() string {
 }
 
 type GameBoard struct {
-	cells       [][]cell
+	cells                [][]cell
 	rows, columns, mines int
-	state       GameState
+	state                GameState
 }
 
 // Has to be before the factory method NewBoard because NewBoard calls it
-func (b *GameBoard)placeMine(){
+func (b *GameBoard) placeMine() {
 	for {
 		row := rand.Intn(b.rows)
 		col := rand.Intn(b.rows)
@@ -83,7 +83,7 @@ func NewBoard(rows, columns, mines int) GameBoard {
 	}
 
 	// Placing mines
-	for i:= 0; i < newBoard.mines; i++{
+	for i := 0; i < newBoard.mines; i++ {
 		newBoard.placeMine()
 	}
 
@@ -91,62 +91,62 @@ func NewBoard(rows, columns, mines int) GameBoard {
 }
 
 // Peek function that displays the hidden board
-func (b GameBoard)peek() {
+func (b GameBoard) peek() {
 	header := "  "
-	for col := 1; col <= b.columns; col ++ {
+	for col := 1; col <= b.columns; col++ {
 		header = header + fmt.Sprintf(" %2d", col)
 	}
 	fmt.Println(header)
-	fmt.Printf("   ┌─%s┐\n", strings.Repeat("───", b.columns - 1))
-	for i:= 0; i < b.rows; i++ {
+	fmt.Printf("   ┌─%s┐\n", strings.Repeat("───", b.columns-1))
+	for i := 0; i < b.rows; i++ {
 		row := make([]string, len(b.cells[i]))
-		for j:= 0; j < b.columns; j++ {
+		for j := 0; j < b.columns; j++ {
 			row[j] = b.cells[i][j].peek()
 		}
 		fmt.Printf("%2c │%s│\n", alphabet[i], strings.Join(row, "  "))
 	}
-	fmt.Printf("   └─%s┘\n", strings.Repeat("───", b.columns - 1))
+	fmt.Printf("   └─%s┘\n", strings.Repeat("───", b.columns-1))
 }
 
-func (b GameBoard)ShowBoard() {
+func (b GameBoard) ShowBoard() {
 	header := "  "
-	for col := 1; col <= b.columns; col ++ {
+	for col := 1; col <= b.columns; col++ {
 		header = header + fmt.Sprintf(" %2d", col)
 	}
 	fmt.Println(header)
-	fmt.Printf("   ┌─%s┐\n", strings.Repeat("───", b.columns - 1))
-	for i:= 0; i < b.rows; i++ {
+	fmt.Printf("   ┌─%s┐\n", strings.Repeat("───", b.columns-1))
+	for i := 0; i < b.rows; i++ {
 		row := make([]string, len(b.cells[i]))
-		for j:= 0; j < b.columns; j++ {
+		for j := 0; j < b.columns; j++ {
 			row[j] = b.cells[i][j].String()
 		}
 		fmt.Printf("%2c │%s│\n", alphabet[i], strings.Join(row, "  "))
 	}
-	fmt.Printf("   └─%s┘\n", strings.Repeat("───", b.columns - 1))
+	fmt.Printf("   └─%s┘\n", strings.Repeat("───", b.columns-1))
 
 }
 
-type index struct{
-	row int
+type index struct {
+	row    int
 	column int
 }
 
 var shiftList = []index{
-		{-1, -1},
-		{-1, 0},
-		{-1, 1},
-		{0, -1},
-		{0, 1},
-		{1, -1},
-		{1, 0},
-		{1, 1},
-	}
+	{-1, -1},
+	{-1, 0},
+	{-1, 1},
+	{0, -1},
+	{0, 1},
+	{1, -1},
+	{1, 0},
+	{1, 1},
+}
 
-func (b *GameBoard)countAdjacentMines() {
+func (b *GameBoard) countAdjacentMines() {
 
 	count := func(row, col int) {
 		counter := 0
-		for _, shift := range shiftList{
+		for _, shift := range shiftList {
 			adjRow := row + shift.row
 			adjCol := col + shift.column
 
@@ -163,8 +163,8 @@ func (b *GameBoard)countAdjacentMines() {
 
 	var wg sync.WaitGroup
 
-	for i:= 0; i < b.rows; i++ {
-		for j:= 0; j < b.columns; j++ {
+	for i := 0; i < b.rows; i++ {
+		for j := 0; j < b.columns; j++ {
 			wg.Add(1)
 
 			go func() {
@@ -177,15 +177,14 @@ func (b *GameBoard)countAdjacentMines() {
 	wg.Wait()
 }
 
-
-func (b *GameBoard)victoryCheck() {
+func (b *GameBoard) victoryCheck() {
 	var wg sync.WaitGroup
 
 	allMinesFlagged := true
 	allSafeOpened := true
 
-	for i:= 0; i < b.rows; i++ {
-		for j:= 0; j < b.columns; j++ {
+	for i := 0; i < b.rows; i++ {
+		for j := 0; j < b.columns; j++ {
 			wg.Add(1)
 
 			go func() {
@@ -193,7 +192,7 @@ func (b *GameBoard)victoryCheck() {
 				if b.cells[i][j].is_mine {
 					if !b.cells[i][j].is_flagged {
 						allMinesFlagged = false
-					} 
+					}
 				} else {
 					if !b.cells[i][j].is_open {
 						allSafeOpened = false
@@ -209,7 +208,7 @@ func (b *GameBoard)victoryCheck() {
 	}
 }
 
-func (b *GameBoard)Open(row, column int) error {
+func (b *GameBoard) Open(row, column int) error {
 
 	if row < 0 || row >= b.rows {
 		return errors.New("invalid space")
@@ -218,7 +217,7 @@ func (b *GameBoard)Open(row, column int) error {
 	if column < 0 || column >= b.columns {
 		return errors.New("invalid space")
 	}
-	
+
 	if b.cells[row][column].is_open {
 		return nil
 	}
@@ -238,8 +237,8 @@ func (b *GameBoard)Open(row, column int) error {
 
 	if b.cells[row][column].is_mine {
 		b.state = StateLose
-	}  else if b.cells[row][column].adjacentMines == 0 {
-		for _, shift := range shiftList{
+	} else if b.cells[row][column].adjacentMines == 0 {
+		for _, shift := range shiftList {
 			adjRow := row + shift.row
 			adjCol := column + shift.column
 
@@ -256,7 +255,7 @@ func (b *GameBoard)Open(row, column int) error {
 	return nil
 }
 
-func (b *GameBoard)Flag(row, column int) error {
+func (b *GameBoard) Flag(row, column int) error {
 	if b.state == StateLose || b.state == StateWin {
 		return nil
 	}
@@ -268,7 +267,7 @@ func (b *GameBoard)Flag(row, column int) error {
 	if column < 0 || column >= b.columns {
 		return errors.New("invalid space")
 	}
-	
+
 	if b.cells[row][column].is_open {
 		return nil
 	}

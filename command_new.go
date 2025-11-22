@@ -14,7 +14,7 @@ func commandNew(cfg *config, args []string) error {
 	reader := bufio.NewScanner(os.Stdin)
 
 	for {
-	
+
 		fmt.Println("Choose a level of difficulty:")
 		fmt.Println()
 		fmt.Println("Beginner:     9x9 grid,   10 mines")

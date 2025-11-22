@@ -5,7 +5,7 @@ import (
 )
 
 func commandOpen(cfg *config, args []string) error {
-	if cfg.board.state== StateLose || cfg.board.state == StateWin {
+	if cfg.board.state == StateLose || cfg.board.state == StateWin {
 		return nil
 	}
 	if len(args) < 1 {

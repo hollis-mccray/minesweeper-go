@@ -17,7 +17,7 @@ const (
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 func parseCoords(coords string) (int, int, error) {
-	row := strings.Index(alphabet,strings.ToUpper(coords[:1]))
+	row := strings.Index(alphabet, strings.ToUpper(coords[:1]))
 	col, err := strconv.Atoi(coords[1:])
 	if err != nil {
 		return 0, 0, err
